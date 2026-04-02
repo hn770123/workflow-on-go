@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World - サンプルアプリ</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX (CDN) -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <!-- Alpine.js (CDN) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center font-sans text-gray-800">
+
+    <div class="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center" x-data="{ count: 0 }">
+        <h1 class="text-3xl font-bold mb-4 text-blue-600">Hello World</h1>
+        <p class="mb-6">これは HTMX, Alpine.js, Tailwind CSS を使ったサンプルアプリケーションです。</p>
+
+        <!-- Alpine.js による簡単なインタラクション例 -->
+        <div class="mb-6 p-4 border border-gray-200 rounded">
+            <p class="mb-2">Alpine.js カウンター: <span x-text="count" class="font-bold text-lg"></span></p>
+            <button @click="count++" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                カウントアップ
+            </button>
+        </div>
+
+        <!-- HTMX によるサーバーとの通信例 (Step 1 ではサーバー側のエンドポイントは未実装のためモック的) -->
+        <div class="text-sm text-gray-500 mt-4 border-t pt-4">
+            <p>※今後のステップでこの領域にサーバーからの動的コンテンツが読み込まれます。</p>
+        </div>
+    </div>
+
+</body>
+</html>
