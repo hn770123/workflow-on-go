@@ -7,3 +7,8 @@ UI制御: Alpine.js（ブラウザ内の細かい動き用）
 デザイン: Tailwind CSS
 認証：Cognito
 
+step 1 hello world のソースとテストを作成
+step 2 ビルド＆デプロイ
+step 3 ユーザー認証（sqlite）、パスワード更新
+step 4 Cognito との連携
+
