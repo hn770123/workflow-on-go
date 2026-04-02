@@ -1,0 +1,9 @@
+
+Go + SQLite + S3 + Lambda (or nssm)
+
+HTML生成: Go標準の html/template
+動的な動き: HTMX（サーバーとの通信用）
+UI制御: Alpine.js（ブラウザ内の細かい動き用）
+デザイン: Tailwind CSS
+認証：Cognito
+
