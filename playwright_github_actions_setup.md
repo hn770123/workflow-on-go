@@ -104,17 +104,6 @@ jobs:
         go-version-file: 'go.mod' # go.mod からバージョンを自動取得
         # または固定バージョン: go-version: '1.21'
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20' # プロジェクトのバージョンに合わせる
-
-    - name: Install dependencies (Node)
-      run: npm ci
-
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-
     - name: Run Go Server (Background)
       # オンプレモードとして動作させるために必要な環境変数を指定します
       env:
@@ -129,8 +118,11 @@ jobs:
         # サーバーが立ち上がるまで少し待機 (ncコマンドでポート確認)
         timeout 30 bash -c 'until nc -z localhost 8080; do sleep 1; done'
 
-    - name: Run Playwright tests
-      run: npx playwright test
+    - name: Run Playwright tests in Docker
+      # サプライチェーン攻撃対策として、Node.js環境をDockerコンテナに隔離して実行します。
+      # Playwrightのバージョン（ここでは v1.40.0-jammy を例示）は、プロジェクトの package.json に合わせてください。
+      run: |
+        docker run --rm --network host -v ${{ github.workspace }}:/work/ -w /work/ mcr.microsoft.com/playwright:v1.40.0-jammy /bin/bash -c "npm ci && npx playwright test"
 
     - name: Output Go Server Log on Failure
       if: failure()
@@ -155,7 +147,22 @@ jobs:
         retention-days: 14
 ```
 
-## 4. 実行とトラブルシューティング
+## 4. サプライチェーン攻撃への対策について (Docker隔離)
+
+この手順書では、`npm ci` やテスト実行を GitHub Actions のホストランナー上で直接行うのではなく、Playwrightの公式Dockerコンテナ内で実行するよう設定しています。
+
+これには、昨今増加している **npmパッケージを狙ったサプライチェーン攻撃** のリスクを最小化する目的があります。
+
+1. **ホスト環境の汚染防止**
+   万が一、インストールしたnpmパッケージのいずれかに悪意のあるスクリプト（インストールフックなど）が含まれていた場合でも、その実行は使い捨てのDockerコンテナ内に限定されます。GitHub Actionsのランナー環境自体が汚染されるのを防ぎます。
+2. **認証情報・シークレットの保護**
+   ホスト側の環境変数（GitHubトークンやAWSクレデンシャルなど）は明示的に渡さない限りコンテナ内からは見えないため、悪意のあるパッケージによる認証情報の窃取を防止できます。
+3. **バージョンの固定**
+   プロジェクトで使用している Playwright のバージョンと、Docker イメージのタグ（例: `v1.40.0-jammy`）は必ず一致させてください。これにより、実行環境の再現性を担保し、予期せぬブラウザやNode.jsバージョンの不一致を防ぎます。
+
+---
+
+## 5. 実行とトラブルシューティング
 
 ### 実行方法
 1. 上記のコードをコミットし、GitHub にプッシュします。
