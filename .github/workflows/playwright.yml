@@ -1,0 +1,65 @@
+name: Playwright E2E Tests
+
+on:
+  # 手動実行のトリガー
+  workflow_dispatch:
+
+  # 自動化のトリガー（必要に応じて）
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod' # go.mod からバージョンを自動取得
+
+    - name: Run Go Server (Background)
+      # オンプレモードとして動作させるために必要な環境変数を指定します
+      env:
+        APP_ENV: on-premise
+        PORT: 8080
+      run: |
+        # Go アプリケーションをバックグラウンドで起動
+        go run ./cmd/server/main.go > go-server.log 2>&1 &
+
+        # サーバーが立ち上がるまで少し待機 (ncコマンドでポート確認)
+        timeout 30 bash -c 'until nc -z localhost 8080; do sleep 1; done'
+
+    - name: Run Playwright tests in Docker
+      # サプライチェーン攻撃対策として、Node.js環境をDockerコンテナに隔離して実行します。
+      # mcr.microsoft.com/playwright のタグは最新または利用したいバージョンに合わせます。
+      run: |
+        docker run --rm --network host -v ${{ github.workspace }}:/work/ -w /work/ mcr.microsoft.com/playwright:v1.59.1-noble /bin/bash -c "npm ci && npx playwright test"
+
+    - name: Output Go Server Log on Failure
+      if: failure()
+      run: cat go-server.log
+
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: always() # 成功・失敗に関わらずレポートを保存
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 14 # 保存期間（日数）
+
+    # テスト失敗時のトレースやスクリーンショットが含まれるディレクトリ
+    # configで trace: 'retain-on-failure' を指定しているため、失敗時のみファイルが生成されます
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 14

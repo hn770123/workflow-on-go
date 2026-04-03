@@ -23,3 +23,12 @@ server.log
 
 # Environment variables
 .env
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+go-server.log
