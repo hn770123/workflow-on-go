@@ -1,0 +1,35 @@
+# Goテスト実行ワークフロー
+# mainブランチへのpush時にGoのテストを自動実行するための設定ファイルです。
+
+name: Go Test
+
+# トリガー設定
+# mainブランチへpushされた場合にのみ実行します。
+on:
+  push:
+    branches:
+      - main
+
+# ジョブの定義
+jobs:
+  test:
+    # 実行環境として最新のUbuntuを指定
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリのコードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Go環境のセットアップ (バージョンは1.24系を使用)
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      # 依存モジュールのダウンロード
+      - name: Install dependencies
+        run: go mod download
+
+      # テストの実行 (すべてのパッケージを詳細な出力でテスト)
+      - name: Run tests
+        run: go test -v ./...
