@@ -40,7 +40,7 @@ jobs:
       # サプライチェーン攻撃対策として、Node.js環境をDockerコンテナに隔離して実行します。
       # mcr.microsoft.com/playwright のタグは最新または利用したいバージョンに合わせます。
       run: |
-        docker run --rm --network host -v ${{ github.workspace }}:/work/ -w /work/ mcr.microsoft.com/playwright:v1.49.0-noble /bin/bash -c "npm ci && npx playwright test"
+        docker run --rm --network host -v ${{ github.workspace }}:/work/ -w /work/ mcr.microsoft.com/playwright:v1.59.1-noble /bin/bash -c "npm ci && npx playwright test"
 
     - name: Output Go Server Log on Failure
       if: failure()
