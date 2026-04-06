@@ -29,7 +29,7 @@ jobs:
           GOARCH: arm64 # Lambdaのアーキテクチャ設定(x86_64の場合は amd64)
           CGO_ENABLED: 0 # SQLiteを使う場合は通常CGOが必要ですが、Lambda用の対策（※後述）が必要です。
         run: |
-          go build -tags lambda.norpc -o bootstrap main.go
+          go build -tags lambda.norpc -o bootstrap ./cmd/server/main.go
           zip deployment.zip bootstrap
 
       - name: Configure AWS Credentials
