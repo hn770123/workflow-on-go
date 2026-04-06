@@ -42,5 +42,5 @@ jobs:
         # AWS CLI を使って、作成したZIPファイルをLambdaにアップロードします
         run: |
           aws lambda update-function-code \
-            --function-name my-app-function \
+            --function-name workflow-on-go \
             --zip-file fileb://deployment.zip
