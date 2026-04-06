@@ -1,0 +1,46 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+
+# OIDCを使用するために必要な権限設定
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21' # 使用するGoのバージョンに合わせて変更してください
+
+      - name: Build Go binary
+        # Linux / ARM64 (または AMD64) 向けにビルドし、ファイル名を 'bootstrap' にします
+        env:
+          GOOS: linux
+          GOARCH: arm64 # Lambdaのアーキテクチャ設定(x86_64の場合は amd64)
+          CGO_ENABLED: 0 # SQLiteを使う場合は通常CGOが必要ですが、Lambda用の対策（※後述）が必要です。
+        run: |
+          go build -tags lambda.norpc -o bootstrap main.go
+          zip deployment.zip bootstrap
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1 # 使用するリージョンに合わせて変更
+
+      - name: Deploy to Lambda
+        # AWS CLI を使って、作成したZIPファイルをLambdaにアップロードします
+        run: |
+          aws lambda update-function-code \
+            --function-name my-app-function \
+            --zip-file fileb://deployment.zip
