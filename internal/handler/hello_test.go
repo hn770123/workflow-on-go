@@ -36,6 +36,13 @@ func TestHelloHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
+	// Content-Typeヘッダの検証
+	expectedContentType := "text/html; charset=utf-8"
+	if contentType := rr.Header().Get("Content-Type"); contentType != expectedContentType {
+		t.Errorf("ハンドラーが誤った Content-Type を返しました: 取得 %v 期待 %v",
+			contentType, expectedContentType)
+	}
+
 	// レスポンスボディの検証 ("Hello World" が含まれているか)
 	expected := "Hello World"
 	if !strings.Contains(rr.Body.String(), expected) {
