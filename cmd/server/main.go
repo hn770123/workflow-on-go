@@ -54,5 +54,18 @@ func main() {
 
 // lambdaHandler はAPI Gatewayからのイベントを受け取り、http.Handlerに変換して処理する
 func lambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return lambdaAdapter.ProxyWithContext(ctx, req)
+	resp, err := lambdaAdapter.ProxyWithContext(ctx, req)
+	if err != nil {
+		return resp, err
+	}
+
+	// Content-Type を明示的に設定 (HTML出力用)
+	if resp.Headers == nil {
+		resp.Headers = make(map[string]string)
+	}
+	if _, exists := resp.Headers["Content-Type"]; !exists {
+		resp.Headers["Content-Type"] = "text/html; charset=utf-8"
+	}
+
+	return resp, nil
 }
