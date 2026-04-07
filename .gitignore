@@ -20,6 +20,8 @@ go.work
 # application executable and logs
 server
 server.log
+bootstrap
+main
 
 # Environment variables
 .env
