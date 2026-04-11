@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}サンプルアプリ{{end}}</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX (CDN) -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <!-- Alpine.js (CDN) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+
+    <nav class="bg-blue-600 p-4 text-white shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">サンプルアプリ</a>
+            <div>
+                {{if .User}}
+                    <span class="mr-4">{{.User.Name}} さん</span>
+                    <a href="/password_change" class="mr-4 hover:underline">パスワード変更</a>
+                    <a href="/logout" class="bg-red-500 hover:bg-red-700 py-1 px-3 rounded text-sm">ログアウト</a>
+                {{else}}
+                    <a href="/login" class="hover:underline">ログイン</a>
+                {{end}}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 px-4">
+        {{template "content" .}}
+    </main>
+
+</body>
+</html>
