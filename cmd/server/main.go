@@ -19,7 +19,7 @@ import (
 )
 
 // Lambda環境用のアダプターをグローバルに保持
-var lambdaAdapter *httpadapter.HandlerAdapter
+var lambdaAdapter *httpadapter.HandlerAdapterV2
 
 func main() {
 	// 設定の読み込み
@@ -54,25 +54,32 @@ func main() {
 	} else {
 		// AWS Lambda環境として起動
 		log.Println("AWS Lambda環境として起動します...")
-		lambdaAdapter = httpadapter.New(mux)
+		lambdaAdapter = httpadapter.NewV2(mux)
 		lambda.Start(lambdaHandler)
 	}
 }
 
 // lambdaHandler はAPI Gatewayからのイベントを受け取り、http.Handlerに変換して処理する
-func lambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func lambdaHandler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	resp, err := lambdaAdapter.ProxyWithContext(ctx, req)
 	if err != nil {
 		return resp, err
 	}
 
-	// Content-Type を明示的に設定 (HTML出力用)
+	// ヘッダーの初期化（nilガード）
 	if resp.Headers == nil {
 		resp.Headers = make(map[string]string)
 	}
+
+	// Content-Type を明示的に設定 (HTML出力用)
 	if _, exists := resp.Headers["Content-Type"]; !exists {
 		resp.Headers["Content-Type"] = "text/html; charset=utf-8"
 	}
+
+	// セキュリティヘッダーの追加
+	resp.Headers["X-Content-Type-Options"] = "nosniff"
+	resp.Headers["X-Frame-Options"] = "DENY"
+	resp.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
 	return resp, nil
 }
