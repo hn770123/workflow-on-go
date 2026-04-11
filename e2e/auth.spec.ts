@@ -44,5 +44,13 @@ test.describe('認証フローのE2Eテスト', () => {
     await page.fill('#password', 'new_secret_password');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/');
+
+    // 9. 他のテストへの影響を防ぐため、パスワードを元に戻す
+    await page.click('text=パスワード変更');
+    await page.fill('#current_password', 'new_secret_password');
+    await page.fill('#new_password', 'initial_password');
+    await page.fill('#confirm_password', 'initial_password');
+    await page.click('button[type="submit"]');
+    await expect(page.getByText('パスワードを更新しました。')).toBeVisible();
   });
 });
