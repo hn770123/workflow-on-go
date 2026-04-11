@@ -9,8 +9,9 @@ import (
 	"os"
 
 	"sampleapp/internal/config"
+	"sampleapp/internal/db"
 	"sampleapp/internal/handler"
-	apptemplate "sampleapp/web/template"
+	"sampleapp/internal/middleware"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,15 +25,21 @@ func main() {
 	// 設定の読み込み
 	cfg := config.Load()
 
-	// テンプレートのパース
-	tmpl, err := apptemplate.Parse()
-	if err != nil {
-		log.Fatalf("テンプレートのパースに失敗しました: %v", err)
+	// データベースの初期化
+	if err := db.InitDB(); err != nil {
+		log.Fatalf("データベースの初期化に失敗しました: %v", err)
 	}
 
 	// ルーティングの設定
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handler.HelloHandler(tmpl))
+
+	// 認証不要なルート
+	mux.HandleFunc("/login", handler.LoginHandler())
+	mux.HandleFunc("/logout", handler.LogoutHandler())
+
+	// 認証が必要なルート
+	mux.Handle("/", middleware.AuthMiddleware(handler.HomeHandler()))
+	mux.Handle("/password_change", middleware.AuthMiddleware(handler.PasswordChangeHandler()))
 
 	// 環境変数によって起動モードを切り替え
 	appEnv := os.Getenv("APP_ENV")
